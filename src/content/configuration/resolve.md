@@ -16,6 +16,7 @@ contributors:
   - myshov
   - anikethsaha
   - chenxsan
+  - jamesgeorge007
 ---
 
 这些选项能设置模块如何被解析。webpack 提供合理的默认值，但是还是可能会修改一些解析的细节。
@@ -321,6 +322,25 @@ module.exports = {
 };
 ```
 
+
+### `resolve.exportsFields` {#resolveexportsfields}
+
+`[string] = ['exports']`
+
+在 package.json 中用于解析模块请求的字段。欲了解更多信息，请查阅 [package-exports guideline](/guides/package-exports/) 文档。
+
+__webpack.config.js__
+
+```js
+module.exports = {
+  //...
+  resolve: {
+    exportsFields: ['exports', 'myCompanyExports']
+  }
+};
+```
+
+
 ### `resolve.modules` {#resolvemodules}
 
 `[string] = ['node_modules']`
@@ -411,6 +431,36 @@ module.exports = {
 };
 ```
 
+
+### `resolve.preferRelative` {#resolvepreferrelative}
+
+`boolean`
+
+当启用此选项时，webpack 更倾向于将模块请求解析为相对请求，而不使用来自 `node_modules` 目录下的模块。
+
+__webpack.config.js__
+
+```js
+module.exports = {
+  //...
+  resolve: {
+    preferRelative: true
+  }
+};
+```
+
+__src/index.js__
+
+```js
+// let's say `src/logo.svg` exists
+import logo1 from 'logo.svg'; // this is viable when `preferRelative` enabled
+import logo2 from './logo.svg'; // otherwise you can only use relative path to resolve logo.svg
+
+// `preferRelative` is enabled by default for `new URL()` case
+const b = new URL('module/path', import.meta.url);
+const a = new URL('./module/path', import.meta.url);
+```
+
 ### `resolve.symlinks` {#resolvesymlinks}
 
 `boolean = true`
@@ -482,6 +532,42 @@ module.exports = {
   //...
   resolve: {
     roots: [__dirname, fixtures]
+  }
+};
+```
+
+### `resolve.importsFields`
+
+`[string]`
+
+Fields from `package.json` which are used to provide the internal requests of a package (requests starting with `#` are considered internal).
+
+__webpack.config.js__
+
+```js
+module.exports = {
+  //...
+  resolve: {
+    importsFields: ['browser', 'module', 'main']
+  }
+};
+```
+
+### `resolve.fallback`
+
+`boolean`
+
+Redirect module requests when normal resolving fails.
+
+__webpack.config.js__
+
+```js
+module.exports = {
+  //...
+  resolve: {
+    fallback: {
+      xyz: path.resolve(__dirname, 'path/to/file.js')
+    }
   }
 };
 ```

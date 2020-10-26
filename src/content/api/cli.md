@@ -1,7 +1,8 @@
 ---
-title: 命令行接口
+title: 命令行接口（CLI）
 sort: 1
 contributors:
+  - anshumanv
   - evenstensberg
   - simon04
   - tbroadley
@@ -31,8 +32,74 @@ related:
 
 如果你还没有安装过 webpack 和 CLI，请先阅读 [安装指南](/guides/installation)。
 
+## 命令 {#commands}
 
-## 使用配置文件的用法 {#usage-with-configuration-file}
+webpack-cli 提供了许多命令来使 webpack 的工作变得简单。默认情况下，webpack 提供了以下命令：
+
+| 命令   | 别名 | 描述                                            |
+| --------- | ----- | ------------------------------------------------------ |
+| `init`    | c     | 初始化一个新的 webpack 配置                               |
+| `migrate` | m     | 将配置迁移到新版本                                        |
+| `loader`  | l     | 生成一个 loader 仓库                                     |
+| `plugin`  | p     | 生成一个 plugin 仓库                                     |
+| `info`    | i     | 输出有关系统和依赖的信息                                   |
+| `serve`   | s     | 运行 webpack Dev Server                                 |
+
+## Flags {#flags}
+
+webpack-cli 提供了许多 flag 来使 webpack 的工作变得简单。默认情况下，webpack 提供了以下 flag：
+
+注意：这些是 webpack v4 的 flag，从 v5 开始 CLI 开始支持 [核心 flags](/api/cli/#core-flags)。
+
+| Flag / 别名        | 类型            | 描述                                                                                                    |
+| ------------------- | --------------- | -------------------------------------------------------------------------------------------------------------- |
+| `--entry`           | string[]        | 应用程序的入口文件，例如 `./src/main.js`                                 |
+| `--config, -c`      | string[]        | 提供 webpack 配置文件的路径，例如 `./webpack.config.js`                  |
+| `--config-name`     | string[]        | 要使用的配置名                                                         |
+| `--name`            | string[]        | 配置名称，在加载多个配置时使用                                            |
+| `--color`           | boolean         | 启用控制台颜色                                                         |
+| `--no-color`        | boolean         | 禁用控制台颜色                                                         |
+| `--merge, -m`       | boolean         | 使用 webpack-merge 合并两个配置文件，例如 `-c ./webpack.config.js -c ./webpack.test.config.js` |
+| `--env`             | string[]        | 当它是一个函数时，传递给配置的环境变量                                     |
+| `--progress`        | boolean         | 在构建过程中打印编译进度                                                 |
+| `--help`            | boolean         | 输出所有支持的 flag 和命令                                              |
+| `--output-path, -o` | string          | webpack 生成文件的输出位置，例如 `./dist`                                |
+| `--target, -t`      | string          | 设置要构建的 target                                                    |
+| `--watch, -w`       | boolean         | 监听文件变化                                                           |
+| `--hot, -h`         | boolean         | 启用 HMR                                                              |
+| `--no-hot`          | boolean         | 禁用 HMR                                                              |
+| `--devtool, -d`     | string          | 控制是否生成 source map，以及如何生成                                     |
+| `--prefetch`        | string          | 预先发生请求                                                            |
+| `--json, -j`        | boolean, string | 将结果打印成 JSON 格式或存储在文件中                                       |
+| `--mode`            | string          | 定义 webpack 所需的 mode                                                |
+| `--version, -v`     | boolean         | 获取当前 cli 版本                                                       |
+| `--stats`           | boolean, string | 它告诉 webpack 如何处理 stats                                            |
+| `--no-stats`        | boolean         | 禁用 stats 输出                                                         |
+| `--analyze`         | boolean         | 它调用 `webpack-bundle-analyzer` 插件来获取 bundle 信息                   |
+
+### Negated Flags {#negated-flags}
+
+| Flag       | 描述                                                   |
+| ---------- | ------------------------------------------------------------- |
+| --no-color | 禁用控制台颜色                                                   |
+| --no-hot   | 如果你通过配置启用了 HMR，则禁用它                                 |
+| --no-stats | 禁用任何由 webpack emit 出来的 stats                             |
+
+### 核心 Flags {#core-flags}
+
+从 CLI v4 和 webpack v5 开始，CLI 将采用从 webpack 的 core 中导入整个配置的模式，允许 CLI 调整几乎所有配置项。
+
+__链接中是 webpack v5 和 CLI v4 支持的所有核心 flag 列表 - [详戳](https://github.com/webpack/webpack-cli/tree/next/packages/webpack-cli#webpack-5)__
+
+例如，如果你想在项目中启用性能提示，你需在配置中使用[此](/configuration/performance/#performancehints)选项，而如果使用核心 flag，你可以这样做：
+
+```bash
+webpack --performance-hints warning
+```
+
+## 用法 {#usage}
+
+### 使用配置文件 {#with-configuration-file}
 
 ```bash
 webpack [--config webpack.config.js]
@@ -40,11 +107,16 @@ webpack [--config webpack.config.js]
 
 配置文件中的相关选项，请参阅[配置](/configuration)。
 
-
-## 不使用配置文件的用法 {#usage-without-configuration-file}
+### 不使用配置文件 {#without-configuration-file}
 
 ```sh
-webpack <entry> [<entry>] -o <output>
+webpack <entry> [<entry>] -o <output-path>
+```
+
+__example__
+
+```sh
+webpack --entry ./first.js --entry ./second.js --output-path /build
 ```
 
 __`<entry>`__
@@ -53,7 +125,7 @@ __`<entry>`__
 
 __`<output>`__
 
-用于存储构建后的文件路径以及文件名。它将映射到配置选项 `output.path` 和 `output.filename`。
+用于存储构建后的文件路径。它将映射到配置选项 `output.path`。
 
 __示例__
 
@@ -70,44 +142,74 @@ __示例__
 ```
 
 ```bash
-webpack src/index.js -o dist/bundle.js
+webpack ./src/index.js -o dist
 ```
 
-这将对源码进行打包，其入口为 `index.js`，且 bundle 文件的输出路径为 `dist`，文件名为 `bundle.js`
+这将对源码进行打包，其入口为 `index.js`，且 bundle 文件的输出路径为 `dist`。
 
 ```bash
-	| Asset     | Size    | Chunks      | Chunk Names |
-	|-----------|---------|-------------|-------------|
-	| bundle.js | 1.54 kB | 0 [emitted] | index       |
-	[0] ./src/index.js 51 bytes {0} [built]
-	[1] ./src/others.js 29 bytes {0} [built]
+asset main.js 142 bytes [compared for emit] [minimized] (name: main)
+./src/index.js 30 bytes [built] [code generated]
+./src/others.js 1 bytes [built] [code generated]
+webpack 5.1.0 compiled successfully in 187 ms
 ```
 
 ```bash
-webpack ./src/index.js ./src.index2.js -o dist/bundle.js
+webpack ./src/index.js ./src/others2.js -o dist/
 ```
 
 以多个入口的方式打包文件
 
 ```bash
-	| Asset     | Size    | Chunks        | Chunk Names   |
-	|-----------|---------|---------------|---------------|
-	| bundle.js | 1.55 kB | 0,1 [emitted] | index, index2 |
-	[0] ./src/index.js 51 bytes {0} [built]
-	[0] ./src/index2.js 54 bytes {1} [built]
-	[1] ./src/others.js 29 bytes {0} {1} [built]
+asset main.js 142 bytes [compared for emit] [minimized] (name: main)
+./src/index.js 30 bytes [built] [code generated]
+./src/others2.js 1 bytes [built] [code generated]
+./src/others.js 1 bytes [built] [code generated]
+webpack 5.1.0 compiled successfully in 198 ms
 ```
 
+## 默认配置 {#default-configurations}
 
-### 常用配置 {#common-options}
+CLI 会在你的项目路径中寻找默认配置，以下是 CLI 采集到的配置文件。
+
+如果没有通过 flag 或 config 提供 `mode`，那么 CLI 会按以下顺序，从下往上递增查找。
+
+> 示例 —— 配置文件的查找顺序 .webpack/webpack.config.development.js > webpack.config.development.js > webpack.config.js
+
+```md
+'webpack.config',
+'webpack.config.dev',
+'webpack.config.development',
+'webpack.config.prod',
+'webpack.config.production',
+'.webpack/webpack.config',
+'.webpack/webpack.config.none',
+'.webpack/webpack.config.dev',
+'.webpack/webpack.config.development',
+'.webpack/webpack.config.prod',
+'.webpack/webpack.config.production',
+'.webpack/webpackfile',
+```
+
+如果提供了 `mode`，例如 mode 为 `production`，那么配置的查找顺序为：
+
+`.webpack/webpack.config.production.* > .webpack/webpack.config.prod.* > webpack.config.production.* > webpack.config.prod.* > webpack.config.*`
+
+## 通用配置 {#common-options}
 
 W> 注意，命令行接口（Command Line Interface）参数的优先级，高于配置文件参数。例如，如果将 [`--mode="production"`](/configuration/mode/#usage) 传入 webpack CLI，而配置文件使用的是 `development`，最终会使用 `production`。
 
-__列出命令行所有可用的配置选项__
+__列出命令行所有可用的命令和 flag__
 
 ```bash
 webpack --help
-webpack -h
+```
+
+__显示单个命令或标志的帮助提示__
+
+```bash
+webpack --help <command>
+webpack --help --<flag>
 ```
 
 __使用配置文件进行构建__
@@ -122,265 +224,64 @@ __以 JSON 格式输出 webpack 的运行结果__
 
 ```bash
 webpack --json
-webpack --json > stats.json
 ```
 
-在其他每个情况下，webpack 会打印一组统计信息，用于显示 bundle, chunk 和用时等详细信息。使用此选项，输出可以是 JSON 对象。此输出文件(response)可被 webpack 的[分析工具](https://webpack.github.com/analyse)、chrisbateman 的 [webpack 可视化工具](https://chrisbateman.github.io/webpack-visualizer/)或 th0r 的 [webpack bundle 分析工具](https://github.com/webpack-contrib/webpack-bundle-analyzer)接收后进行分析。分析工具将接收 JSON 并以图形形式提供构建的所有细节。
-
-### 环境选项 {#environment-options}
-
-当 webpack 配置对象[导出为一个函数](/configuration/configuration-types/#exporting-a-function)时，可以向其传入一个 "环境对象（environment）"。
+__如果你想把 stats 数据存储为 JSON 而非输出，你可以使用：__
 
 ```bash
-webpack --env.production    # 设置 env.production == true
-webpack --env.platform=web  # 设置 env.platform == "web"
+webpack --json stats.json
 ```
 
-`--env` 参数具有多种语法：
+在其他情况下，webpack 会打印出 bundle、chunk 以及 timing 细节的 stats 信息。使用此选项，会输出 JSON 对象。这个输出结果可以被 webpack 的 [analyse 工具](https://webpack.github.io/analyse/)，或者 chrisbateman 的 [webpack-visualizer](https://chrisbateman.github.io/webpack-visualizer/)，再或者 th0r 的 [webpack-bundle-analyzer](https://github.com/webpack-contrib/webpack-bundle-analyzer) 所识别。analyse 工具会接收 JSON，并以图形的形式展示所有构建的细节。
 
-调用                                | 结果环境
----------------------------------------- | ---------------------------
-`webpack --env prod`                     | `"prod"`
-`webpack --env.prod`                     | `{ prod: true }`
-`webpack --env.prod=1`                   | `{ prod: 1 }`
-`webpack --env.prod=foo`                 | `{ prod: "foo" }`
-`webpack --env.prod --env.min`           | `{ prod: true, min: true }`
-`webpack --env.prod --env min`           | `[{ prod: true }, "min"]`
-`webpack --env.prod=foo --env.prod=bar`  | `{prod: [ "foo", "bar" ]}`
+## Environment 选项 {#environment-options}
 
-T> 参阅[环境变量](/guides/environment-variables/)指南获取更多使用方法。
-
-### 配置选项 {#configuration-options}
-
-参数 | 说明 | 输入类型 | 默认值
-------------------------- | ------------------------------------------- | ---------- | ------------------
-`--config`                | 配置文件的路径 | string     | `webpack.config.js` 或 `webpackfile.js`
-`--config-register, -r`   | 在 webpack 配置文件加载前先预加载一个或多个模块 | array |
-`--config-name`           | 要使用的配置名称 | string |
-`--env`                   | 当配置文件是一个函数时，会将环境变量传给这个函数 |
-`--mode`                  | 用到的模式 | string | `'production'`
-
-### 输出配置 {#output-options}
-
-通过以下这些配置，你可以调整构建流程的某些[输出](/configuration/output/)参数。
-
-参数 | 说明 | 输入类型 | 默认值
-------------------------- | ------------------------------------------- | ---------- | ------------------
-`--output-chunk-filename` | 输出的附带 chunk 的文件名   | string     | 含有 [id] 的文件名，而不是 [name] 或者 [id] 作为前缀
-`--output-filename`       | 打包文件的文件名           | string     | `[name].js`
-`--output-jsonp-function` | 加载 chunk 时使用的 JSONP 函数名 | string | `webpackJsonp`
-`--output-library`        | 以库的形式导出入口文件 | string |
-`--output-library-target` | 以库的形式导出入口文件时，输出的类型 | string | `var`
-`--output-path`           | 输出的路径（在公共路径的基础上）      | string     | 当前目录
-`--output-pathinfo`       | 加入一些依赖信息的注解 | boolean | `false`
-`--output-public-path`    | 输出文件时使用的公共路径              | string     | `/`
-`--output-source-map-filename` | 生成的 SourceMap 的文件名  | string     | `[name].map` 或者 `[outputFilename].map`
-`--build-delimiter` | 在构建输出之后，显示的自定义文本 | string | 默认字符串是 null。你可以提供一个 `=== Build done ===` 这样的字符串
-
-
-#### 示例用法 {#example-usage}
+当 webpack 配置[导出为函数时](/configuration/configuration-types/#exporting-a-function)，会接收到一个 "environment" 的参数。
 
 ```bash
-webpack index=./src/index.js index2=./src/index2.js --output-path='./dist' --output-filename='[name][hash].bundle.js'
-
-| Asset                                | Size    | Chunks      | Chunk Names   |
-|--------------------------------------|---------|-------------|---------------|
-| index2740fdca26e9348bedbec.bundle.js |  2.6 kB | 0 [emitted] | index2        |
-| index740fdca26e9348bedbec.bundle.js  | 2.59 kB | 1 [emitted] | index         |
-	[0] ./src/others.js 29 bytes {0} {1} [built]
-	[1] ./src/index.js 51 bytes {1} [built]
-	[2] ./src/index2.js 54 bytes {0} [built]
+webpack --env production    # sets env.production == true
 ```
 
-```bash
-webpack.js index=./src/index.js index2=./src/index2.js --output-path='./dist' --output-filename='[name][hash].bundle.js' --devtool source-map --output-source-map-filename='[name]123.map'
+`--env` 参数可以接收多个值：
 
-| Asset                                | Size    | Chunks      | Chunk Names   |
-|--------------------------------------|---------|-------------|---------------|
-| index2740fdca26e9348bedbec.bundle.js | 2.76 kB | 0 [emitted] | index2        |
-|  index740fdca26e9348bedbec.bundle.js | 2.74 kB | 1 [emitted] | index         |
-|                        index2123.map | 2.95 kB | 0 [emitted] | index2        |
-|                         index123.map | 2.95 kB | 1 [emitted] | index         |
-	[0] ./src/others.js 29 bytes {0} {1} [built]
-	[1] ./src/index.js 51 bytes {1} [built]
-	[2] ./src/index2.js 54 bytes {0} [built]
+| Invocation                     | Resulting environment       |
+| ------------------------------ | --------------------------- |
+| `webpack --env prod`           | `{ prod: true }`            |
+| `webpack --env prod --env min` | `{ prod: true, min: true }` |
+
+T> 请查阅 [environment 变量指南](/guides/environment-variables/)了解更多信息及用法。
+
+## 配置选项 {#configuration-options}
+
+| 参数       | 说明                                                    | 输入类型 | 默认值                                             |
+| --------------- | -------------------------------------------------------------- | ---------- | --------------------------------------------------- |
+| `--config`      | 配置文件的路径                                 | string     | [默认配置](/api/cli/#default-configurations) |
+| `--config-name` | 要使用的配置名                               | string     |
+| `--env`         | 当配置文件为函数时，environment 将作为参数传递给配置  |            |
+| `--mode`        | 要使用的 mode                                                    | string     | `'production'`                                      |
+
+## 分析 Bundle {#analyzing-bundle}
+
+你可以使用 `webpack-bundle-analyzer` 插件来分析你 webpack 输出的 bundle。你还可以通过 CLI 的 `--analyze` flag 调用它
+
+```sh
+webpack --analyze
 ```
 
-
-### Debug 配置 {#debug-options}
-
-以下这些配置可以帮助你在 Webpack 编译过程中更好地 debug。
-
-参数 | 说明 | 输入类型 | 默认值
------------- | ------------------------------------------------ | ---------- | -------------
-`--debug`    | 把 loader 设置为 debug 模式 | boolean    | `false`
-`--devtool`  | 为打包好的资源定义 [source map 的类型] | string | `-`
-`--progress` | 打印出编译进度的百分比值 | boolean    | `false`
-`--display-error-details` | 展示错误细节 | boolean | `false`
-
-### 模块配置 {#module-options}
-
-这些配置可以用于绑定 Webpack 允许的[模块](/configuration/module/)。
-
-参数 | 说明 | 用法
--------------------- | ---------------------------------- | ----------------
-`--module-bind`      | 为 loader 绑定一个文件扩展 | `--module-bind js=babel-loader`
-`--module-bind-post` | 为 post loader 绑定一个文件扩展 |
-`--module-bind-pre`  | 为 pre loader 绑定一个文件扩展 |
-
-
-### Watch 选项 {#watch-options}
-
-这些配置可以用于[观察](/configuration/watch/)依赖文件的变化，一旦有变化，则可以重新执行构建流程。
-
-参数 | 说明
-------------------------- | ----------------------
-`--watch`, `-w`           | 观察文件系统的变化
-`--watch-aggregate-timeout` | 指定一个毫秒数，在这个时间内，文件若发送了多次变化，会被合并
-`--watch-poll`            | 轮询观察文件变化的时间间隔（同时会打开轮询机制）
-`--watch-stdin`, `--stdin` | 当 stdin 关闭时，退出进程
-
-
-### 性能优化配置 {#optimize-options}
-
-在生产环境的构建时，这些配置可以用于调整 webpack 的一些性能相关的配置。
-
-参数 | 说明 | 使用的插件
---------------------------- | -------------------------------------------------------|----------------------
-`--optimize-max-chunks`     | 限制 chunk 的数量 | [LimitChunkCountPlugin](/plugins/limit-chunk-count-plugin/)
-`--optimize-min-chunk-size` | 限制 chunk 的最小体积               | [MinChunkSizePlugin](/plugins/min-chunk-size-plugin/)
-`--optimize-minimize`       | 压缩混淆 javascript，并且把 loader 设置为 minimizing | [TerserPlugin](/plugins/terser-webpack-plugin/)
-
-
-### Resolve 配置 {#resolve-options}
-
-这些配置可以用于设置 webpack [resolver](/configuration/resolve/) 时使用的别名（alias）和扩展名（extension）。
-
-参数 | 说明 | 示例
----------------------- | ------------------------------------------------------- | -------------
-`--resolve-alias`        | 指定模块的别名 | --resolve-alias jquery-plugin=jquery.plugin
-`--resolve-extensions`   | 指定需要被处理的文件的扩展名 | --resolve-extensions .es6 .js .ts
-`--resolve-loader-alias` | 最小化 JavaScript，并且将 loader 切换到最简 |
-
-
-### 统计数据配置 {#stats-options}
-
-以下选项用于配置 Webpack 在控制台输出的[统计数据](/configuration/stats/)，以及这些数据的样式。
-
-参数 | 说明 | 类型
--------------------------------- | ------------------------------------------------------------------ | -------
-`--color`, `--colors`            | 强制在控制台开启颜色 [默认：仅对 TTY 输出启用] | `boolean`
-`--no-color`, `--no-colors`      | 强制在控制台关闭颜色 | `boolean`
-`--display`                      | 选择[显示预设](/configuration/stats)(verbose - 繁琐, detailed - 细节, normal - 正常, minimal - 最小, errors-only - 仅错误, none - 无; 从 webpack 3.0.0 开始) | `string`
-`--display-cached` | 在输出中显示缓存的模块 | `boolean`
-`--display-cached-assets` | 在输出中显示缓存的 assets | `boolean`
-`--display-chunks` | 在输出中显示 chunks | `boolean`
-`--display-depth` | 显示从入口起点到每个模块的距离 | `boolean`
-`--display-entrypoints`   | 在输出中显示入口文件 | `boolean`
-`--display-error-details` | 显示详细的错误信息 | `boolean`
-`--display-exclude`       | 在输出中显示被排除的文件 | `boolean`
-`--display-max-modules`          | 设置输出中可见模块的最大数量 | `number`
-`--display-modules` | 在输出中显示所有模块，包括被排除的模块 | `boolean`
-`--display-optimization-bailout` | 作用域提升回退触发器（Scope hoisting fallback trigger）（从 webpack 3.0.0 开始） | `boolean`
-`--display-origins` | 在输出中显示最初的 chunk | `boolean`
-`--display-provided-exports`     | 显示有关从模块导出的信息 | `boolean`
-`--display-reasons` | 显示模块包含在输出中的原因 | `boolean`
-`--display-used-exports` | 显示模块中被使用的接口（Tree Shaking）| `boolean`
-`--hide-modules` | 隐藏关于模块的信息 | `boolean`
-`--sort-assets-by` | 对 assets 列表以某种属性排序 | `string`
-`--sort-chunks-by`               | 对 chunks 列表以某种属性排序 | `string`
-`--sort-modules-by`              | 对模块列表以某种属性排序 | `string`
-`--verbose`                      | 显示更多信息 | `boolean`
-
-
-### 高级配置 {#advanced-options}
-
-参数 | 说明 | 用法
------------------ | ---------------------------------------- | -----
-`--bail` | 一旦发生错误，立即终止 |
-`--cache` | 开启缓存 [watch 时会默认打开] | `--cache=false`
-`--define` | 定义 bundle 中的任意自由变量，查看 [shimming](/guides/shimming/) | `--define process.env.NODE_ENV="'development'"`
-`--hot`           | 开启[模块热替换](/concepts/hot-module-replacement/) | `--hot=true`
-`--labeled-modules` | 开启模块标签 [使用 LabeledModulesPlugin] |
-`--live-reload`           | 开启实时重载 | `--live-reload=true`
-`--plugin`        | 加载某个[插件](/configuration/plugins/) |
-`--prefetch`      | 预加载某个文件 | `--prefetch=./files.js`
-`--provide`       | 在所有模块中将这些模块提供为自由变量，查看 [shimming](/guides/shimming) | `--provide jQuery=jquery`
-`--records-input-path` | 记录文件的路径（读取） |
-`--records-output-path` | 记录文件的路径（写入） |
-`--records-path`  | 记录文件的路径 |
-`--target`        | [目标](/configuration/target/)的执行环境 | `--target='node'`
-
-### 简写 {#shortcuts}
-
-简写 | 含义
----------|----------------------------
--d       | `--debug --devtool cheap-module-eval-source-map --output-pathinfo`
--p       | `--mode production`，查阅[构建生产环境](/guides/production/)
-
-### Profiling {#profiling}
-
-`--profile` 选项捕获编译时每个步骤的时间信息，并且将这些信息包含在输出中。
-
-```bash
-webpack --profile
-
-⋮
-[0] ./src/index.js 90 bytes {0} [built]
-    factory:22ms building:16ms = 38ms
-```
-
-对于每个模块，输出中将根据具体情况包含以下信息：
-
-- `factory`: 收集模块元数据的时间（如：解析文件名）
-- `building`: 构建模块的时间（如：加载和解析）
-- `dependencies`: 识别和连接模块依赖关系的时间
-
-与 `--progress` 搭配使用，`--profile` 可以让你深入了解编译过程中哪一步需要多长时间。这可以帮助你以更明智的方式优化你的构建。
-
-```bash
-webpack --progress --profile
-
-30ms building modules
-1ms sealing
-1ms optimizing
-0ms basic module optimization
-1ms module optimization
-1ms advanced module optimization
-0ms basic chunk optimization
-0ms chunk optimization
-1ms advanced chunk optimization
-0ms module and chunk tree optimization
-1ms module reviving
-0ms module order optimization
-1ms module id optimization
-1ms chunk reviving
-0ms chunk order optimization
-1ms chunk id optimization
-10ms hashing
-0ms module assets processing
-13ms chunk assets processing
-1ms additional chunk assets processing
-0ms recording
-0ms additional asset processing
-26ms chunk asset optimization
-1ms asset optimization
-6ms emitting
-⋮
-```
+W> 请确保你的项目中安装了 `webpack-bundle-analyzer`，否则 CLI 会提示你安装它。
 
 ## 将 CLI 参数传递给 Node.js {#pass-cli-arguments-to-nodejs}
 
-将参数直接传递给 Node.js 进程，你可以使用 `--node-args` 选项。所有其他的标志和选项将由 webpack-cli 接收。
+将参数直接传递给 Node.js 进程，你可以使用 `NODE_OPTIONS` 选项。
 
 例如，将 Node.js 进程的内存限制增加到 4 GB。
 
 ```bash
-webpack --node-args="--max-old-space-size=4096"
+NODE_OPTIONS="--max-old-space-size=4096" webpack
 ```
 
 此外，你也可以将多个选项传递给 Node.js 进程。
 
 ```bash
-webpack --node-args="--max-old-space-size=4096" --node-args="-r /path/to/preload/file.js"
+NODE_OPTIONS="--max-old-space-size=4096 -r /path/to/preload/file.js" webpack
 ```
